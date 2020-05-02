@@ -1,12 +1,19 @@
 import React, { Fragment, useState, useEffect } from "react";
-import axios from "axios";
-import personService from "./components/persons";
+import personService from "./services/persons";
+import Notification from "./components/Notification";
+import Search from "./components/Search";
+import AddPerson from "./components/AddPerson";
+import "./App.css";
 
 const App = () => {
   const [persons, setPersons] = useState([]);
   const [newName, setNewName] = useState("");
   const [newNumber, setNewNumber] = useState("");
   const [searchName, setSearchName] = useState("");
+  const [notificationMessage, setNotificationMessage] = useState({
+    message: "",
+    status: ""
+  });
 
   useEffect(() => {
     personService.getAll().then(persons => {
@@ -53,16 +60,53 @@ const App = () => {
                 person.id !== existingPerson.id ? person : returnedPerson
               )
             );
+
+            setNotificationMessage({
+              message: `Updated ${returnedPerson.name}`,
+              status: "success"
+            });
+            setTimeout(() => {
+              setNotificationMessage({
+                message: "",
+                status: ""
+              });
+            }, 5000);
+
+            setNewName("");
+            setNewNumber("");
+          })
+          .catch(error => {
+            setNotificationMessage({
+              message: error,
+              status: "error"
+            });
+            setTimeout(() => {
+              setNotificationMessage({
+                message: "",
+                status: ""
+              });
+            }, 5000);
           });
       }
     } else {
       personService.create(personObject).then(returnedPerson => {
         setPersons(persons.concat(returnedPerson));
+
+        setNotificationMessage({
+          message: `Added ${returnedPerson.name}`,
+          status: "success"
+        });
+        setTimeout(() => {
+          setNotificationMessage({
+            message: "",
+            status: ""
+          });
+        }, 5000);
+
+        setNewName("");
+        setNewNumber("");
       });
     }
-
-    setNewName("");
-    setNewNumber("");
   };
 
   const removePerson = ({ id, name }) => {
@@ -73,7 +117,7 @@ const App = () => {
     }
   };
 
-  const validateNewPerson = (name, number) => {
+  const validateNewPerson = name => {
     const nameValidation = persons.find(person => person.name === name);
 
     if (nameValidation) {
@@ -85,42 +129,23 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
-      <h2>Search</h2>
-      <div>
-        filter shown with <input onChange={handleSearchChange} />
-      </div>
-      <h2>Add Person</h2>
-      <form>
-        <div>
-          name: <input onChange={handleNameChange} />
-        </div>
-        <div>
-          number: <input onChange={handleNumberChange} />
-        </div>
-        <div>
-          <button type="submit" onClick={addPerson}>
-            add
+      <Notification notification={notificationMessage} />
+      <Search handleSearchChange={handleSearchChange} />
+      <AddPerson
+        handleNameChange={handleNameChange}
+        handleNumberChange={handleNumberChange}
+        addPerson={addPerson}
+      />
+      <h2>Names</h2>
+      {persons.map(person => (
+        <div className="flex" key={person.id}>
+          <p>
+            {person.name} - {person.number}
+          </p>
+          <button type="button" onClick={() => removePerson(person)}>
+            delete
           </button>
         </div>
-      </form>
-      <h2>Numbers</h2>
-      <div>
-        debug: {newName} - {newNumber}
-      </div>
-
-      <h2>Names</h2>
-
-      {persons.map(person => (
-        <Fragment>
-          <div key={person.id}>
-            <p>
-              {person.name} - {person.number}
-            </p>
-            <button type="button" onClick={() => removePerson(person)}>
-              delete
-            </button>
-          </div>
-        </Fragment>
       ))}
     </div>
   );
