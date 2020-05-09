@@ -2,10 +2,10 @@ import axios from "axios";
 const baseUrl = "/api/persons";
 
 const getAll = async () => {
-  const request = axios.get(baseUrl);
+  const req = axios.get(baseUrl);
   try {
-    const response = await request;
-    return response.data;
+    const res = await req;
+    return res.data;
   } catch (error) {
     console.log(error);
   }

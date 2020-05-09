@@ -17,7 +17,7 @@ const App = () => {
 
   useEffect(() => {
     personService.getAll().then(persons => {
-      setPersons(persons);
+      setPersons(persons.data);
     });
   }, []);
 
@@ -109,10 +109,12 @@ const App = () => {
     }
   };
 
-  const removePerson = ({ id, name }) => {
+  const removePerson = ({ _id, name }) => {
     if (window.confirm(`Delete ${name}?`)) {
-      personService.remove(id).then(returnedPerson => {
-        setPersons(persons.filter(returnedPerson => returnedPerson.id !== id));
+      personService.remove(_id).then(returnedPerson => {
+        setPersons(
+          persons.filter(returnedPerson => returnedPerson._id !== _id)
+        );
       });
     }
   };
